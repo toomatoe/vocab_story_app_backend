@@ -1,11 +1,30 @@
-from fastapi import APIRouter, Request
-from app.services.openai_service import generate_story
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+from app.services.openai_service import generate_story, StoryGenerationError, USE_MOCK_MODE
+
+class StoryRequest(BaseModel):
+    word: str = Field(..., min_length=1)
+
+class StoryResponse(BaseModel):
+    word: str
+    story: str
+    mock: bool
 
 router = APIRouter()
-@router.post("/generate_story")
-async def story_endpoint(request: Request):
-    data = await request.json()
-    word = data["word"]
-    story = await generate_story(word)
-    return {"word": word, "story": story}
+
+@router.post("/generate_story", response_model=StoryResponse)
+async def story_endpoint(payload: StoryRequest):
+    try:
+        story_content = await generate_story(payload.word)
+        return StoryResponse(
+            word=payload.word,
+            story=story_content,
+            mock=USE_MOCK_MODE
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except StoryGenerationError as e:
+        raise HTTPException(status_code=502, detail=f"Story generation failed: {e}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
