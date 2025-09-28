@@ -17,7 +17,7 @@ router = APIRouter()
 @router.post("/generate_story", response_model=StoryResponse)
 async def story_endpoint(payload: StoryRequest):
     try:
-        story_content = await generate_story(payload.word, payload.length)
+        story_content = await generate_story(payload.word, story_length=payload.length)
         return StoryResponse(
             word=payload.word,
             story=story_content,
