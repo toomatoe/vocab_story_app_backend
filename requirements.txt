@@ -11,7 +11,7 @@ httptools==0.6.4
 httpx==0.28.1
 idna==3.10
 jiter==0.11.0
-openai==1.109.1
+google-generativeai
 pydantic==2.11.9
 pydantic_core==2.33.2
 python-dotenv==1.1.1

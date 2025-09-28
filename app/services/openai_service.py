@@ -1,17 +1,19 @@
 import os
 from typing import Optional
 
-import openai
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = API_KEY
+API_KEY = os.getenv("GOOGLE_API_KEY")
+
+if API_KEY and API_KEY.strip():
+    genai.configure(api_key=API_KEY)
 
 PLACEHOLDER_VALUES = {
-    "your_openai_api_key_here",
+    "your_google_api_key_here",
     "your_api_key_here", 
-    "sk-placeholder",
+    "AIza-placeholder",
     "placeholder",
     "xxx",
     "fake_key"
@@ -51,19 +53,21 @@ async def generate_story(word: str, *, temperature: float = 0.7, max_tokens: int
     )
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
-            max_tokens=max_tokens,
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+            )
         )
     except Exception as e:
-        raise StoryGenerationError(f"OpenAI API request failed: {e}") from e
+        raise StoryGenerationError(f"Google Gemini API request failed: {e}") from e
 
     try:
-        content: Optional[str] = response.choices[0]["message"]["content"]
-    except (KeyError, IndexError, TypeError) as e:
-        raise StoryGenerationError("Unexpected response format from OpenAI API") from e
+        content: Optional[str] = response.text
+    except (AttributeError, ValueError) as e:
+        raise StoryGenerationError("Unexpected response format from Google Gemini API") from e
 
     if not content:
         raise StoryGenerationError("Empty content returned from OpenAI API")
