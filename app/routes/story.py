@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from app.services.openai_service import generate_story, StoryGenerationError, USE_MOCK_MODE
+from app.services.openai_service import generate_story, StoryGenerationError, get_mock_mode, clear_cache
 
 class StoryRequest(BaseModel):
     word: str = Field(..., min_length=1)
@@ -22,7 +22,7 @@ async def story_endpoint(payload: StoryRequest):
             word=payload.word,
             story=story_content,
             length=payload.length,
-            mock=USE_MOCK_MODE
+            mock=get_mock_mode()
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -30,4 +30,21 @@ async def story_endpoint(payload: StoryRequest):
         raise HTTPException(status_code=502, detail=f"Story generation failed: {e}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+
+
+@router.delete("/cache")
+async def clear_story_cache():
+    """Clear the story cache and return number of items cleared"""
+    cleared_count = clear_cache()
+    return {"message": f"Cache cleared. Removed {cleared_count} cached stories."}
+
+
+@router.get("/health")
+async def health_check():
+    """Health check endpoint with system status"""
+    return {
+        "status": "healthy",
+        "mock_mode": get_mock_mode(),
+        "cache_enabled": True
+    }
 
