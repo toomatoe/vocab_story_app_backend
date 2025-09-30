@@ -31,7 +31,7 @@ def _evict_cache_if_needed():
 load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
-# Validate API key efficiently
+# Validate API key efficiently  THIS IS MOCK MODE CHECK 
 PLACEHOLDER_VALUES = frozenset({
     "your_google_api_key_here",
     "your_api_key_here", 
