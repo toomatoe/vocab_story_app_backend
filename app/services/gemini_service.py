@@ -44,19 +44,19 @@ MOCK_STORY_TEMPLATE = (
 
 LENGTH_CONFIGS = {
     "brief": {
-        "template": "Write an engaging, creative story about '{}' in 1-2 paragraphs (100-150 words). Include vivid descriptions, interesting characters, and show the word's meaning through action and dialogue. Make it memorable and fun!",
+        "template": "Write an engaging, creative story about the word '{}' in 1-2 paragraphs (100-150 words). Include vivid descriptions, interesting characters, and show the word's meaning through action and dialogue. Make it memorable and fun!",
         "tokens": 200
     },
     "short": {
-        "template": "Create a captivating story about '{}' (100-150 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
+        "template": "Create a captivating story about the word '{}' (100-150 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
         "tokens": 200
     },
     "medium": {
-        "template": "Write a compelling story about '{}' (400-500 words) with rich, vivid details. Include: well-developed characters with distinct personalities, engaging dialogue, sensory descriptions, a clear plot with beginning/middle/end, and emotional moments. The story should naturally demonstrate the word's meaning through character actions and experiences. Make it immersive and memorable!",
+        "template": "Write a compelling story about the word '{}' (400-500 words) with rich, vivid details. Include: well-developed characters with distinct personalities, engaging dialogue, sensory descriptions, a clear plot with beginning/middle/end, and emotional moments. The story should naturally demonstrate the word's meaning through character actions and experiences. Make it immersive and memorable!",
         "tokens": 650
     },
     "long": {
-        "template": "Create an immersive, detailed story about '{}' (600-800 words) with strong character development and an engaging plot. Include: multiple characters with unique voices, rich dialogue, vivid sensory details, emotional depth, a meaningful conflict, character growth, and a satisfying resolution. Weave the word's meaning naturally throughout the narrative through character actions, thoughts, and experiences. Make it a story readers will remember!",
+        "template": "Create an immersive, detailed story about the word '{}' (600-800 words) with strong character development and an engaging plot. Include: multiple characters with unique voices, rich dialogue, vivid sensory details, emotional depth, a meaningful conflict, character growth, and a satisfying resolution. Weave the word's meaning naturally throughout the narrative through character actions, thoughts, and experiences. Make it a story readers will remember!",
         "tokens": 1000
     }
 }
@@ -100,7 +100,7 @@ def get_cache_stats() -> Dict[str, int]:
         "cache_usage_percent": int((len(_story_cache) / _cache_size_limit) * 100)
     }
 
-async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int = 500, story_length: str = "short") -> str:
+async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int = 500, story_length: str = "short", context: str = "") -> str:
     """Optimized story generation with efficient caching and validation"""
     if not word:
         raise ValueError("'word' must be a non-empty string")
@@ -118,13 +118,19 @@ async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int
     config = LENGTH_CONFIGS.get(story_length, LENGTH_CONFIGS["short"])
     adjusted_max_tokens = min(max_tokens, config["tokens"])
     
-    cache_key = _get_cache_key(normalized_word, story_length, temperature, adjusted_max_tokens)
+    # Include context in cache key if provided
+    cache_key = _get_cache_key(f"{normalized_word}_{context.strip()}", story_length, temperature, adjusted_max_tokens)
     
     if cache_key in _story_cache:
         _story_cache.move_to_end(cache_key)
         return _story_cache[cache_key]
 
-    prompt = config["template"].format(normalized_word)
+    # Build prompt with context if provided
+    base_prompt = config["template"].format(normalized_word)
+    if context.strip():
+        prompt = f"{base_prompt} Context: Focus on the '{context.strip()}' meaning of '{normalized_word}'."
+    else:
+        prompt = base_prompt
 
     try:
         config_key = (temperature, adjusted_max_tokens)

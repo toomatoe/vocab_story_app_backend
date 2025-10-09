@@ -7,12 +7,14 @@ class StoryRequest(BaseModel):
     """Request model for story generation"""
     word: str = Field(..., min_length=1)  # The vocabulary word to build a story around
     length: str = Field(default="short", pattern="^(brief|short|medium|long)$")  # How long the story should be
+    context: str = Field(default="", description="Optional context to specify which meaning of the word to use (e.g., 'baseball' for 'bat' or 'animal' for 'bat')")
 
 class StoryResponse(BaseModel):
     """Response model containing the generated story"""
     word: str      # The original vocabulary word
     story: str     # The AI-generated story
     length: str    # The requested story length
+    context: str   # The context used (if any)
     mock: bool     # Whether this was generated using mock mode
 
 # API router for all story-related endpoints
@@ -22,11 +24,12 @@ router = APIRouter()
 async def create_story(request: StoryRequest):
     """Generate a story using AI based on a vocabulary word"""
     try:
-        story_content = await generate_story(request.word, story_length=request.length)
+        story_content = await generate_story(request.word, story_length=request.length, context=request.context)
         return StoryResponse(
             word=request.word,
             story=story_content,
             length=request.length,
+            context=request.context,
             mock=get_mock_mode()
         )
     except ValueError as error:
