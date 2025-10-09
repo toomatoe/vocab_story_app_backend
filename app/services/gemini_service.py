@@ -44,19 +44,19 @@ MOCK_STORY_TEMPLATE = (
 
 LENGTH_CONFIGS = {
     "brief": {
-        "template": "Create a very short story about '{}' in 1-2 paragraphs (100-150 words).",
+        "template": "Write an engaging, creative story about '{}' in 1-2 paragraphs (100-150 words). Include vivid descriptions, interesting characters, and show the word's meaning through action and dialogue. Make it memorable and fun!",
         "tokens": 200
     },
     "short": {
-        "template": "Create a short story about '{}' (100-150 words) that demonstrates its meaning. Keep it educational and appropriate for children.",
+        "template": "Create a captivating story about '{}' (100-150 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
         "tokens": 200
     },
     "medium": {
-        "template": "Create a medium-length story about '{}' (400-500 words) with rich details.",
+        "template": "Write a compelling story about '{}' (400-500 words) with rich, vivid details. Include: well-developed characters with distinct personalities, engaging dialogue, sensory descriptions, a clear plot with beginning/middle/end, and emotional moments. The story should naturally demonstrate the word's meaning through character actions and experiences. Make it immersive and memorable!",
         "tokens": 650
     },
     "long": {
-        "template": "Create a detailed story about '{}' (600-800 words) with character development.",
+        "template": "Create an immersive, detailed story about '{}' (600-800 words) with strong character development and an engaging plot. Include: multiple characters with unique voices, rich dialogue, vivid sensory details, emotional depth, a meaningful conflict, character growth, and a satisfying resolution. Weave the word's meaning naturally throughout the narrative through character actions, thoughts, and experiences. Make it a story readers will remember!",
         "tokens": 1000
     }
 }
@@ -100,7 +100,7 @@ def get_cache_stats() -> Dict[str, int]:
         "cache_usage_percent": int((len(_story_cache) / _cache_size_limit) * 100)
     }
 
-async def generate_story(word: str, *, temperature: float = 0.7, max_tokens: int = 500, story_length: str = "short") -> str:
+async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int = 500, story_length: str = "short") -> str:
     """Optimized story generation with efficient caching and validation"""
     if not word:
         raise ValueError("'word' must be a non-empty string")
