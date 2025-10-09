@@ -32,17 +32,15 @@ async def create_story(request: StoryRequest):
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
     except StoryGenerationError as error:
-        raise HTTPException(status_code=502, detail=f"Failed to generate story: {error}")
+        raise HTTPException(status_code=502, detail=f"I couldn't generate a sigma story: {error}")
     except Exception as error:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {error}")
-
+        raise HTTPException(status_code=500, detail=f"Oopsie: {error}")
 
 @router.delete("/cache")
 async def clear_story_cache():
     """Clear all cached stories to free up memory"""
     cleared_count = clear_cache()
     return {"message": f"Cache cleared. Removed {cleared_count} cached stories."}
-
 
 @router.get("/health")
 async def get_system_status():

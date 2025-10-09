@@ -63,8 +63,8 @@ LENGTH_CONFIGS = {
         "tokens": 200
     },
     "short": {
-        "template": "Create a short story about '{}' (200-300 words) that demonstrates its meaning. Keep it educational and appropriate for children.",
-        "tokens": 400
+        "template": "Create a short story about '{}' (100-150 words) that demonstrates its meaning. Keep it educational and appropriate for children.",
+        "tokens": 200
     },
     "medium": {
         "template": "Create a medium-length story about '{}' (400-500 words) with rich details that clearly shows its meaning. Keep it educational and appropriate for children.",
