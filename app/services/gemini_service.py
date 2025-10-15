@@ -7,16 +7,13 @@ import re
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Optimized cache with better performance
 _story_cache: OrderedDict[str, str] = OrderedDict()
 _cache_size_limit = 100
 _cache_eviction_threshold = 120
 
-# Pre-compile regex for word validation
 _word_pattern = re.compile(r'^[a-zA-Z\s\-\']+$')
 
 def _evict_cache_if_needed():
-    """Only evict cache when we exceed threshold - more efficient"""
     if len(_story_cache) > _cache_eviction_threshold:
         while len(_story_cache) > _cache_size_limit:
             _story_cache.popitem(last=False)
@@ -78,21 +75,17 @@ class StoryGenerationError(Exception):
 
 
 def _get_cache_key(word: str, story_length: str, temperature: float, max_tokens: int) -> str:
-    """Generate efficient cache key using simple string concatenation"""
     return f"{word}_{story_length}_{temperature}_{max_tokens}"
 
 def get_mock_mode() -> bool:
-    """Get mock mode status"""
     return USE_MOCK_MODE
 
 def clear_cache() -> int:
-    """Clear story cache and return number of items cleared"""
     count = len(_story_cache)
     _story_cache.clear()
     return count
 
 def get_cache_stats() -> Dict[str, int]:
-    """Get cache statistics for monitoring"""
     return {
         "cache_size": len(_story_cache),
         "cache_limit": _cache_size_limit,
@@ -101,7 +94,6 @@ def get_cache_stats() -> Dict[str, int]:
     }
 
 async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int = 500, story_length: str = "short", context: str = "") -> str:
-    """Optimized story generation with efficient caching and validation"""
     if not word:
         raise ValueError("'word' must be a non-empty string")
     
@@ -118,14 +110,14 @@ async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int
     config = LENGTH_CONFIGS.get(story_length, LENGTH_CONFIGS["short"])
     adjusted_max_tokens = min(max_tokens, config["tokens"])
     
-    # Include context in cache key if provided
+    
     cache_key = _get_cache_key(f"{normalized_word}_{context.strip()}", story_length, temperature, adjusted_max_tokens)
     
     if cache_key in _story_cache:
         _story_cache.move_to_end(cache_key)
         return _story_cache[cache_key]
 
-    # Build prompt with context if provided
+   
     base_prompt = config["template"].format(normalized_word)
     if context.strip():
         prompt = f"{base_prompt} Context: Focus on the '{context.strip()}' meaning of '{normalized_word}'."
