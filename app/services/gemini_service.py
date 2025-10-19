@@ -42,10 +42,10 @@ MOCK_STORY_TEMPLATE = (
 LENGTH_CONFIGS = {
     "brief": {
         "template": "Write an engaging, creative story about the word '{}' in 1-2 paragraphs (100-150 words). Include vivid descriptions, interesting characters, and show the word's meaning through action and dialogue. Make it memorable and fun!",
-        "tokens": 200
+        "tokens": 100
     },
     "short": {
-        "template": "Create a captivating story about the word '{}' (100-150 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
+        "template": "Create a captivating story about the word '{}' (200-250 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
         "tokens": 200
     },
     "medium": {
