@@ -33,12 +33,12 @@ USE_MOCK_MODE = (
 
 if not USE_MOCK_MODE:
     genai.configure(api_key=API_KEY)
-
+'''
 MOCK_STORY_TEMPLATE = (
     "This is a mock story for the word '{word}'. The story generation is currently "
     "running in mock mode because the GOOGLE_API_KEY is not configured."
 )
-
+'''
 LENGTH_CONFIGS = {
     "brief": {
         "template": "Write an engaging, creative story about the word '{}' in 1-2 paragraphs (100-150 words). Include vivid descriptions, interesting characters, and show the word's meaning through action and dialogue. Make it memorable and fun!",
