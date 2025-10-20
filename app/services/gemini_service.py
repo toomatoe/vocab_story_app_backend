@@ -33,24 +33,24 @@ USE_MOCK_MODE = (
 
 if not USE_MOCK_MODE:
     genai.configure(api_key=API_KEY)
-'''
+
 MOCK_STORY_TEMPLATE = (
     "This is a mock story for the word '{word}'. The story generation is currently "
     "running in mock mode because the GOOGLE_API_KEY is not configured."
 )
-'''
+
 LENGTH_CONFIGS = {
     "brief": {
         "template": "Write an engaging, creative story about the word '{}' in 1-2 paragraphs (100-150 words). Include vivid descriptions, interesting characters, and show the word's meaning through action and dialogue. Make it memorable and fun!",
         "tokens": 100
     },
     "short": {
-        "template": "Create a captivating story about the word '{}' (200-250 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
+        "template": "Create a captivating story about the word '{}' (100-150 words) that clearly demonstrates its meaning. Include: interesting characters with names, dialogue, sensory details (what characters see/hear/feel), and a small conflict or challenge that gets resolved. Make it educational yet entertaining for children. Show, don't just tell the word's meaning!",
         "tokens": 200
     },
     "medium": {
         "template": "Write a compelling story about the word '{}' (400-500 words) with rich, vivid details. Include: well-developed characters with distinct personalities, engaging dialogue, sensory descriptions, a clear plot with beginning/middle/end, and emotional moments. The story should naturally demonstrate the word's meaning through character actions and experiences. Make it immersive and memorable!",
-        "tokens": 650
+        "tokens": 550
     },
     "long": {
         "template": "Create an immersive, detailed story about the word '{}' (600-800 words) with strong character development and an engaging plot. Include: multiple characters with unique voices, rich dialogue, vivid sensory details, emotional depth, a meaningful conflict, character growth, and a satisfying resolution. Weave the word's meaning naturally throughout the narrative through character actions, thoughts, and experiences. Make it a story readers will remember!",
@@ -150,7 +150,7 @@ async def generate_story(word: str, *, temperature: float = 0.8, max_tokens: int
                 raise StoryGenerationError("Story generation was blocked due to recitation concerns. Try a different word.")
             else:
                 raise StoryGenerationError(f"Story generation failed with finish reason: {finish_reason}")
-        
+
         content = content_parts[0].text
         if not content:
             raise StoryGenerationError("Empty content returned from Google Gemini API")
