@@ -14,4 +14,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(story.router)
+app.include_router(story.story_router)

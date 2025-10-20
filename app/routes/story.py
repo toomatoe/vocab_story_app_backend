@@ -2,56 +2,64 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from app.services.gemini_service import generate_story, StoryGenerationError, get_mock_mode, clear_cache, get_cache_stats
 
-# Data models for API requests and responses
-class StoryRequest(BaseModel):
-    """Request model for story generation"""
-    word: str = Field(..., min_length=1)  # The vocabulary word to build a story around
-    length: str = Field(default="short", pattern="^(brief|short|medium|long)$")  # How long the story should be
-    context: str = Field(default="", description="Optional context to specify which meaning of the word to use (e.g., 'baseball' for 'bat' or 'animal' for 'bat')")
+# Request/response models define the API contract for story generation
+class StoryGenerationRequest(BaseModel):
+    vocabulary_word: str = Field(..., min_length=1)
+    story_length: str = Field(default="short", pattern="^(brief|short|medium|long)$")
+    word_meaning_context: str = Field(default="", description="Optional context to specify which meaning of the word to use")
 
-class StoryResponse(BaseModel):
-    """Response model containing the generated story"""
-    word: str      # The original vocabulary word
-    story: str     # The AI-generated story
-    length: str    # The requested story length
-    context: str   # The context used (if any)
-    mock: bool     # Whether this was generated using mock mode
+class GeneratedStoryResponse(BaseModel):
+    vocabulary_word: str
+    generated_story: str
+    requested_length: str
+    provided_context: str
+    is_mock_response: bool
 
-# API router for all story-related endpoints
-router = APIRouter()
+# Router handles all story-related API endpoints
+story_router = APIRouter()
 
-@router.post("/generate_story", response_model=StoryResponse)
-async def create_story(request: StoryRequest):
-    """Generate a story using AI based on a vocabulary word"""
+@story_router.post("/generate_story", response_model=GeneratedStoryResponse)
+async def create_vocabulary_story(story_request: StoryGenerationRequest):
+    # Main endpoint that uses AI to generate educational stories from vocabulary words
     try:
-        story_content = await generate_story(request.word, story_length=request.length, context=request.context)
-        return StoryResponse(
-            word=request.word,
-            story=story_content,
-            length=request.length,
-            context=request.context,
-            mock=get_mock_mode()
+        # Call Gemini AI service to create story content
+        ai_generated_content = await generate_story(
+            story_request.vocabulary_word, 
+            story_length=story_request.story_length, 
+            context=story_request.word_meaning_context
         )
-    except ValueError as error:
-        raise HTTPException(status_code=400, detail=str(error))
-    except StoryGenerationError as error:
-        raise HTTPException(status_code=502, detail=f"I couldn't generate a sigma story: {error}")
-    except Exception as error:
-        raise HTTPException(status_code=500, detail=f"Oopsie: {error}")
+        
+        # Package the generated story with metadata for the response
+        return GeneratedStoryResponse(
+            vocabulary_word=story_request.vocabulary_word,
+            generated_story=ai_generated_content,
+            requested_length=story_request.story_length,
+            provided_context=story_request.word_meaning_context,
+            is_mock_response=get_mock_mode()
+        )
+    
+    # Convert service errors into appropriate HTTP responses
+    except ValueError as validation_error:
+        raise HTTPException(status_code=400, detail=str(validation_error))
+    except StoryGenerationError as generation_error:
+        raise HTTPException(status_code=502, detail=f"Failed to generate story: {generation_error}")
+    except Exception as unexpected_error:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {unexpected_error}")
 
-@router.delete("/cache")
-async def clear_story_cache():
-    """Clear all cached stories to free up memory"""
-    cleared_count = clear_cache()
-    return {"message": f"Cache cleared. Removed {cleared_count} cached stories."}
+@story_router.delete("/cache")
+async def clear_all_cached_stories():
+    # Admin endpoint to clear cached stories and free up memory
+    number_of_stories_cleared = clear_cache()
+    return {"message": f"Cache cleared. Removed {number_of_stories_cleared} cached stories."}
 
-@router.get("/health")
-async def get_system_status():
-    """Check system health and get cache performance statistics"""
+@story_router.get("/health")
+async def get_application_health_status():
+    # Health check endpoint that reports system status and performance metrics
+    current_cache_statistics = get_cache_stats()
     return {
         "status": "healthy",
         "mock_mode": get_mock_mode(),
         "cache_enabled": True,
-        "cache_stats": get_cache_stats()
+        "cache_stats": current_cache_statistics
     }
 
